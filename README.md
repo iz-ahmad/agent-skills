@@ -1,8 +1,8 @@
 # Agent Skills
 
-A collection of reusable agent skills. Currently home to one skill:
+Reusable agent skills. Currently published one skill. May add more in future.
 
-## [`create-github-project-issues`](skills/create-github-project-issues/)
+### [`create-github-project-issues`](skills/create-github-project-issues/)
 
 Bulk-create GitHub issues from a plan, backlog, or task list and place them on a GitHub Project board — with assignee, issue type (Feature/Bug/Task), and status — using a single `gh`-based script.
 
