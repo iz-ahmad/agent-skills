@@ -52,7 +52,7 @@ git clone https://github.com/iz-ahmad/agent-skills.git
 cp -r agent-skills/skills/create-github-project-issues ~/.agents/skills/
 ```
 
-Works with any agent that reads SKILL.md-style skills (pi, Claude Code, Cursor, and others).
+Works with any agent that reads SKILL.md-style skills.
 
 ## License
 
