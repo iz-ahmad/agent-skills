@@ -32,10 +32,13 @@ create_issues.sh \
   --repo OWNER/REPO --project 36 --owner ORG \
   --prefix "[MyProject]" --assignee USER \
   --type Feature --status "Todo" \
-  --tasks /tmp/tasks.txt
+  --tasks /tmp/tasks.txt --yes
 ```
 
-Run with `--dry-run` first to preview. Full flags and gotchas are documented in the [SKILL.md](skills/create-github-project-issues/SKILL.md).
+Run with `--dry-run` first to preview (recommended). The script prompts for
+confirmation on a TTY and requires `--yes` in non-interactive shells. It is
+create-only — it never deletes or modifies existing issues — but it is not
+idempotent: re-running duplicates every issue. Full flags and gotchas are documented in the [SKILL.md](skills/create-github-project-issues/SKILL.md).
 
 ## Installation
 
