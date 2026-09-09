@@ -64,7 +64,47 @@ EOF
 - **`item-list` JSON can be stale/wrong** for assignee and type — verify via
   the repo issues REST API instead.
 - Deleting draft items: `gh project item-delete N --owner ORG --id <item-id>`.
+  **Destructive — the only delete in this workflow.** Only ever pass an item ID
+  you just looked up via `item-list` and matched by exact title; never a
+  guessed/recycled ID.
 - Large boards: use `--limit 300` on `item-list` (default truncates at 30).
+
+## Risks and safety rules
+
+- **The script is create-only** — it never deletes, closes, or edits existing
+  issues/items. The `updateIssue` GraphQL mutation is applied ONLY to issues
+  the script just created; never reuse that snippet against existing issues
+  (it would overwrite their type).
+- **NOT idempotent** — re-running creates duplicate issues every time. Always
+  `--dry-run` first, and check the project/board for existing equivalent
+  issues before a real run.
+- **Confirmation gate** — the script prompts before bulk-creating on a TTY and
+  refuses to run non-interactively without `--yes`. Agents should always run
+  `--dry-run` first and show the user the plan before passing `--yes`.
+- **Partial failure has no rollback** — if run N of M issues fails mid-way,
+  earlier issues stay created. Check the summary line; clean up manually only
+  with explicit user approval.
+- **Scope changes are auth-sensitive** — `gh auth refresh` only ADDS scopes
+  via an interactive device flow; it does not rotate the token. Never ask for
+  broader scopes than `read:project` + `project`.
+- **Wrong target = real damage surface** — a wrong `--repo`/`--project` pair
+  litters the wrong board. The pre-run echo shows resolved repo/project/issue
+  count; read it before confirming.
+
+## Portability notes (any project)
+
+- **Org vs user-owned projects**: `--type` uses org issue types
+  (`organization.issueTypes`) — orgs only. For a **user-owned** project,
+  omit `--type` (and use `--owner <username>`).
+- **Custom field names**: status field defaults to `Status`; override with
+  `--status-field NAME` when the board uses a different single-select field.
+- **Tasks file limits**: one issue per line; `|` separates title and body, so
+  bodies cannot contain pipes or line breaks. Use `%0A` in body text if a
+  line break is needed; anything richer needs manual issue creation.
+- **Repo ≠ project owner is fine** — issues may live in any repo the token can
+  write while the project is owned by another org/user.
+- **macOS bash 3.2 compatible**; no Linux-only tools used. Windows requires
+  WSL/git-bash.
 
 ## Script reference
 
@@ -79,9 +119,11 @@ EOF
 | `--prefix TEXT` | no | prefixed to every title |
 | `--assignee LOGIN` | no | set on every issue |
 | `--type NAME` | no | org issue type (e.g. Feature, Bug, Task) |
-| `--status NAME` | no | single-select project Status value (e.g. Todo) |
-| `--dry-run` | no | show what would be created |
+| `--status NAME` | no | single-select status value (e.g. Todo) |
+| `--status-field NAME` | no | status field name (default: `Status`) |
+| `--dry-run` | no | show what would be created — always run this first |
+| `--yes` / `-y` | no | skip confirmation (required non-interactively) |
 
-Safe to re-run: it creates new issues each time (no dedup); check the project
-first if unsure. Adding `Source:` links to the plan doc in bodies is
-recommended for traceability.
+The script is create-only and never modifies existing issues, but it is
+**not idempotent** — re-running duplicates all issues. Dry-run first, and add
+`Source:` links to the plan doc in bodies for traceability.
